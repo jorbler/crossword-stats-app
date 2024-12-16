@@ -2,10 +2,11 @@ import pandas as pd
 from src.getNYTdata import get_data
 import json
 from datetime import datetime, date, timedelta
+from typing import Tuple
 
 puzzle_types = ["daily", "mini", "bonus"]
 
-def retrieve_data(puzzle_type: str, start_date: str, cookies: dict) -> tuple[dict, pd.DataFrame]:
+def retrieve_data(puzzle_type: str, start_date: str, cookies: dict) -> Tuple[dict, pd.DataFrame]:
     '''Retrieves data from NYT Games website as JSON files and preprocesses them.'''
     if puzzle_type == "mini":
         first_days = list(pd.date_range(start = start_date, end = pd.Timestamp("today"), freq = "MS").astype(str))

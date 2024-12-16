@@ -4,6 +4,7 @@ from PyQt5 import QtCore as qtc
 from PyQt5.QtGui import QFont, QPixmap
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from datetime import date
+from typing import List
 import os
 import pandas as pd
 import json
@@ -25,14 +26,61 @@ class YesNoPopUpWindow(qtw.QMessageBox):
         self.setFont(QFont("Arial", 14, weight = 1))
 
 
-class WelcomeWindow(YesNoPopUpWindow):
+class TableWidgetConfigure(QAbstractTableModel):
+    '''Configures table from a Pandas DataFrame.'''
+    def __init__(self, dataframe: pd.DataFrame, col_names: List[str]) -> None:
+        super().__init__()
+        self.dataframe = dataframe
+        self.col_names = col_names
+
+    def rowCount(self, parent = None) -> int:
+        return self.dataframe.shape[0]
+
+    def columnCount(self, parent = None) -> int:
+        return self.dataframe.shape[1]
+
+    def data(self, index, role=Qt.DisplayRole) -> None:
+        if role == Qt.DisplayRole:
+            value = self.dataframe.iloc[index.row(), index.column()]
+            return str(value)
+        return None
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole) -> None:
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return self.col_names[section]
+            elif orientation == Qt.Vertical:
+                return str(self.dataframe.index[section])
+        return None
+
+
+class TableWidget(qtw.QWidget):
+    '''Creates QWidget containing table from TableWidgetConfigure.'''
+    def __init__(self, dataframe:pd.DataFrame, col_names:List[str]) -> None:
+        super().__init__()
+        self.dataframe = dataframe
+
+        self.table = qtw.QTableView()
+        self.model = TableWidgetConfigure(self.dataframe, col_names)
+        self.table.setModel(self.model)
+        self.table.resizeColumnsToContents()
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(qtw.QHeaderView.Stretch)
+        
+
+        layout = qtw.QVBoxLayout()
+        layout.addWidget(self.table)
+        self.setLayout(layout)
+
+
+class WelcomeWindow(YesNoPopUpWindow): ### not yet implemented in app
     '''Welcome window that appears to the user the first time that they open the app.'''
     def __init__(self) -> None:
         intro_text = "Welcome to MyCrosswordBuddy! This app allows you to gain insight into your NYT Crossword data. \nTo access your data, you will need to enter the cookie associated with your NYT Games account.\n\nDo you need instructions on how to access your cookie?"
         super().__init__("Welcome!", intro_text)
 
 
-class MenuPage(qtw.QWidget):
+class MenuPage(qtw.QWidget): ### not yet implemented in app
     '''QWidget containing text and an optional image.'''
     def __init__(self, text: str, rel_image_path: str = None) -> None:
         super().__init__()
@@ -46,7 +94,7 @@ class MenuPage(qtw.QWidget):
         self.setLayout(layout)
 
 
-class IntroMenuPages(qtw.QWidget):
+class IntroMenuPages(qtw.QWidget): ### not yet implemented in app
     '''Menu that has next and previous arrows that switch the "page" of the menu.'''
     def __init__(self) -> None:
         super().__init__()
@@ -151,6 +199,155 @@ class EnterCookie(qtw.QDialog):
         self.accept()
 
 
+class InitalLoadData(qtw.QDialog):
+    '''
+    Loads the all of the initial user data upon first opening the app.
+    Asks user for start dates for each puzzle type.
+    '''
+    def __init__(self) -> None:
+        super().__init__()
+
+        daily_box_layout = qtw.QHBoxLayout()
+        self.daily_box_label = qtw.QLabel("Daily Puzzles Start Date: ")
+        self.daily_date_box = qtw.QLineEdit()
+        self.daily_date_box.setPlaceholderText("YYYY-MM-DD")
+        self.daily_date_box.setFixedSize(400, 40)
+        daily_box_layout.addWidget(self.daily_box_label)
+        daily_box_layout.addWidget(self.daily_date_box)
+
+        mini_box_layout = qtw.QHBoxLayout()
+        self.mini_box_label = qtw.QLabel("Mini Puzzles Start Date: ")
+        self.mini_date_box = qtw.QLineEdit()
+        self.mini_date_box.setPlaceholderText("YYYY-MM-DD")
+        self.mini_date_box.setFixedSize(400, 40)
+        mini_box_layout.addWidget(self.mini_box_label)
+        mini_box_layout.addWidget(self.mini_date_box)
+
+        bonus_box_layout = qtw.QHBoxLayout()
+        self.bonus_box_label = qtw.QLabel("Bonus Puzzles Start Date: ")
+        self.bonus_date_box = qtw.QLineEdit()
+        self.bonus_date_box.setPlaceholderText("YYYY-MM-DD")
+        self.bonus_date_box.setFixedSize(400, 40)
+        bonus_box_layout.addWidget(self.bonus_box_label)
+        bonus_box_layout.addWidget(self.bonus_date_box)
+
+        date_inputs_layout = qtw.QVBoxLayout()
+        date_inputs_layout.addLayout(daily_box_layout)
+        date_inputs_layout.addLayout(mini_box_layout)
+        date_inputs_layout.addLayout(bonus_box_layout)
+        
+        self.puzzle_type_label = qtw.QLabel(" ")
+        self.progress_label = qtw.QLabel(" ")
+
+        self.progress_bar = qtw.QProgressBar()
+        self.progress_bar.setFixedHeight(30)
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(1)
+
+        self.load_button = qtw.QPushButton("Load My Data")
+        self.load_button.clicked.connect(self.load_data)
+
+        self.continue_button = qtw.QPushButton("Continue", self)
+        self.continue_button.clicked.connect(self.show_main_window)
+        self.continue_button.setEnabled(False)
+
+        buttons_layout = qtw.QHBoxLayout()
+        buttons_layout.addWidget(self.load_button)
+        buttons_layout.addWidget(self.continue_button)
+
+        layout = qtw.QVBoxLayout()
+        layout.addLayout(date_inputs_layout)
+        layout.addWidget(self.puzzle_type_label, alignment = Qt.AlignCenter)
+        layout.addWidget(self.progress_label, alignment = Qt.AlignCenter)
+        layout.addWidget(self.progress_bar)
+        layout.addLayout(buttons_layout)
+        
+
+        self.setLayout(layout)
+
+    def load_data(self) -> None:
+        '''Loads user data.'''
+        try:
+            with open("data/user_data.json", 'r') as file:
+                    data = json.load(file)
+            cookies = {"NYT-S": data["cookie"]}
+
+            daily_date = self.daily_date_box.text()
+            mini_date = self.mini_date_box.text()
+            bonus_date = self.mini_date_box.text()
+
+            print(f"Loading daily puzzles...")
+            self.progress_bar.setValue(10)
+            print("Retrieving puzzle IDs...")
+            my_daily_stats, daily_metadata = retrieve_data("daily", daily_date, cookies)
+            self.progress_bar.setValue(17)
+
+            print("Getting your stats...")
+            daily_stats_frame = create_stats_frame(my_daily_stats)
+            self.progress_bar.setValue(25)
+            
+            print("Merging stats with metadata...")
+            daily_crosswords = merge_frames(daily_stats_frame, daily_metadata)
+            daily_crosswords = add_days(daily_crosswords)
+            self.progress_bar.setValue(30)
+
+            save_crosswords(daily_crosswords, "daily", daily_date)
+
+            print(f"Loading mini puzzles...")
+            self.progress_bar.setValue(37)
+
+            print("Retrieving puzzle IDs...")
+            my_mini_stats, mini_metadata = retrieve_data("mini", mini_date, cookies)
+            self.progress_bar.setValue(45)
+
+            print("Getting your stats...")
+            mini_stats_frame = create_stats_frame(my_mini_stats)
+            self.progress_bar.setValue(50)
+
+            print("Merging stats with metadata...")
+            mini_crosswords = merge_frames(mini_stats_frame, mini_metadata)
+            mini_crosswords = add_days(mini_crosswords)
+            self.progress_bar.setValue(60)
+
+            save_crosswords(mini_crosswords, "mini", mini_date)
+
+            print(f"Loading bonus puzzles...")
+            self.progress_bar.setValue(67)
+
+            print("Retrieving puzzle IDs...")
+            my_bonus_stats, bonus_metadata = retrieve_data("bonus", bonus_date, cookies)
+            self.progress_bar.setValue(75)
+
+            print("Getting your stats...")
+            bonus_stats_frame = create_stats_frame(my_bonus_stats)
+            self.progress_bar.setValue(85)
+            
+            print("Merging stats with metadata...")
+            bonus_crosswords = merge_frames(bonus_stats_frame, bonus_metadata)
+            bonus_crosswords = add_days(bonus_crosswords)
+            self.progress_bar.setValue(95)
+            
+            save_crosswords(bonus_crosswords, "bonus", bonus_date)
+            
+            data["last_refresh_date"] = str(date.today() - timedelta(days=1))
+ 
+            with open('data/user_data.json', 'w') as f:
+                json.dump(data, f)
+            
+            self.continue_button.setEnabled(True)
+            self.load_button.setEnabled(False)
+            self.progress_label.setText("Data load is complete! Please click 'continue'")
+
+        except Exception as e:
+            self.puzzle_type_label.setText("There was an error getting your data. Please check your cookie and internet connection")
+
+    def show_main_window(self) -> None:
+        '''Shows main window and accepts current window.'''
+        self.main_window = MainWindow()
+        self.main_window.show()
+        self.accept()
+
+
 class DailyHistTab(qtw.QWidget):
     '''QWidget containing the histograms for the daily crosswords.'''
     def __init__(self) -> None:
@@ -188,7 +385,7 @@ class DailyHistTab(qtw.QWidget):
         self.day = s
         self.draw_hist()
 
-    
+
 class DailyBarTab(qtw.QWidget):
     def __init__(self):
         super().__init__()
@@ -346,53 +543,6 @@ class MiniTab(qtw.QWidget):
         self.setLayout(layout)
 
 
-class TableWidgetConfigure(QAbstractTableModel):
-    '''Configures table from a Pandas DataFrame.'''
-    def __init__(self, dataframe: pd.DataFrame, col_names: list[str]) -> None:
-        super().__init__()
-        self.dataframe = dataframe
-        self.col_names = col_names
-
-    def rowCount(self, parent = None) -> int:
-        return self.dataframe.shape[0]
-
-    def columnCount(self, parent = None) -> int:
-        return self.dataframe.shape[1]
-
-    def data(self, index, role=Qt.DisplayRole) -> None:
-        if role == Qt.DisplayRole:
-            value = self.dataframe.iloc[index.row(), index.column()]
-            return str(value)
-        return None
-
-    def headerData(self, section, orientation, role=Qt.DisplayRole) -> None:
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
-                return self.col_names[section]
-            elif orientation == Qt.Vertical:
-                return str(self.dataframe.index[section])
-        return None
-
-
-class TableWidget(qtw.QWidget):
-    '''Creates QWidget containing table from TableWidgetConfigure.'''
-    def __init__(self, dataframe:pd.DataFrame, col_names:list[str]) -> None:
-        super().__init__()
-        self.dataframe = dataframe
-
-        self.table = qtw.QTableView()
-        self.model = TableWidgetConfigure(self.dataframe, col_names)
-        self.table.setModel(self.model)
-        self.table.resizeColumnsToContents()
-        header = self.table.horizontalHeader()
-        header.setSectionResizeMode(qtw.QHeaderView.Stretch)
-        
-
-        layout = qtw.QVBoxLayout()
-        layout.addWidget(self.table)
-        self.setLayout(layout)
-
-
 class BonusTab(qtw.QWidget):
     '''QWidget containing data for bonus puzzles.'''
     def __init__(self) -> None:
@@ -454,160 +604,12 @@ class RefreshButton(qtw.QWidget):
             return True
         return False
 
+
 class ConfirmRefresh(YesNoPopUpWindow):
     '''YesNoPopUpWindow informing user that it has been more than 30 days since last data refresh and confirming that they want to proceed.'''
     def __init__(self) -> None:
         text = "It has been more than 30 days since you last refreshed your crossword data. It may take a couple of minutes to refresh. Do you want to proceed?"
         super().__init__("Confirm Data Refresh", text)
-
-
-class InitalLoadData(qtw.QDialog):
-    '''
-    Loads the all of the initial user data upon first opening the app.
-    Asks user for start dates for each puzzle type.
-    '''
-    def __init__(self) -> None:
-        super().__init__()
-
-        daily_box_layout = qtw.QHBoxLayout()
-        self.daily_box_label = qtw.QLabel("Daily Puzzles Start Date: ")
-        self.daily_date_box = qtw.QLineEdit()
-        self.daily_date_box.setPlaceholderText("YYYY-MM-DD")
-        self.daily_date_box.setFixedSize(400, 40)
-        daily_box_layout.addWidget(self.daily_box_label)
-        daily_box_layout.addWidget(self.daily_date_box)
-
-        mini_box_layout = qtw.QHBoxLayout()
-        self.mini_box_label = qtw.QLabel("Mini Puzzles Start Date: ")
-        self.mini_date_box = qtw.QLineEdit()
-        self.mini_date_box.setPlaceholderText("YYYY-MM-DD")
-        self.mini_date_box.setFixedSize(400, 40)
-        mini_box_layout.addWidget(self.mini_box_label)
-        mini_box_layout.addWidget(self.mini_date_box)
-
-        bonus_box_layout = qtw.QHBoxLayout()
-        self.bonus_box_label = qtw.QLabel("Bonus Puzzles Start Date: ")
-        self.bonus_date_box = qtw.QLineEdit()
-        self.bonus_date_box.setPlaceholderText("YYYY-MM-DD")
-        self.bonus_date_box.setFixedSize(400, 40)
-        bonus_box_layout.addWidget(self.bonus_box_label)
-        bonus_box_layout.addWidget(self.bonus_date_box)
-
-        date_inputs_layout = qtw.QVBoxLayout()
-        date_inputs_layout.addLayout(daily_box_layout)
-        date_inputs_layout.addLayout(mini_box_layout)
-        date_inputs_layout.addLayout(bonus_box_layout)
-        
-        self.puzzle_type_label = qtw.QLabel(" ")
-        self.progress_label = qtw.QLabel(" ")
-
-        self.progress_bar = qtw.QProgressBar()
-        self.progress_bar.setFixedHeight(30)
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(1)
-
-        self.load_button = qtw.QPushButton("Load My Data")
-        self.load_button.clicked.connect(self.load_data)
-
-        self.continue_button = qtw.QPushButton("Continue", self)
-        self.continue_button.clicked.connect(self.show_main_window)
-        self.continue_button.setEnabled(False)
-
-        buttons_layout = qtw.QHBoxLayout()
-        buttons_layout.addWidget(self.load_button)
-        buttons_layout.addWidget(self.continue_button)
-
-        layout = qtw.QVBoxLayout()
-        layout.addLayout(date_inputs_layout)
-        layout.addWidget(self.puzzle_type_label, alignment = Qt.AlignCenter)
-        layout.addWidget(self.progress_label, alignment = Qt.AlignCenter)
-        layout.addWidget(self.progress_bar)
-        layout.addLayout(buttons_layout)
-        
-
-        self.setLayout(layout)
-
-    def load_data(self) -> None:
-        '''Loads user data.'''
-        try:
-            with open("data/user_data.json", 'r') as file:
-                    data = json.load(file)
-            cookies = {"NYT-S": data["cookie"]}
-
-            daily_date = self.daily_date_box.text()
-            mini_date = self.mini_date_box.text()
-            bonus_date = self.mini_date_box.text()
-
-            print(f"Loading daily puzzles...")
-            self.progress_bar.setValue(10)
-            print("Retrieving puzzle IDs...")
-            my_daily_stats, daily_metadata = retrieve_data("daily", daily_date, cookies)
-            self.progress_bar.setValue(17)
-
-            print("Getting your stats...")
-            daily_stats_frame = create_stats_frame(my_daily_stats)
-            self.progress_bar.setValue(25)
-            
-            print("Merging stats with metadata...")
-            daily_crosswords = merge_frames(daily_stats_frame, daily_metadata)
-            daily_crosswords = add_days(daily_crosswords)
-            self.progress_bar.setValue(30)
-
-            save_crosswords(daily_crosswords, "daily", daily_date)
-
-            print(f"Loading mini puzzles...")
-            self.progress_bar.setValue(37)
-
-            print("Retrieving puzzle IDs...")
-            my_mini_stats, mini_metadata = retrieve_data("mini", mini_date, cookies)
-            self.progress_bar.setValue(45)
-
-            print("Getting your stats...")
-            mini_stats_frame = create_stats_frame(my_mini_stats)
-            self.progress_bar.setValue(50)
-
-            print("Merging stats with metadata...")
-            mini_crosswords = merge_frames(mini_stats_frame, mini_metadata)
-            mini_crosswords = add_days(mini_crosswords)
-            self.progress_bar.setValue(60)
-
-            save_crosswords(mini_crosswords, "mini", mini_date)
-
-            print(f"Loading bonus puzzles...")
-            self.progress_bar.setValue(67)
-
-            print("Retrieving puzzle IDs...")
-            my_bonus_stats, bonus_metadata = retrieve_data("bonus", bonus_date, cookies)
-            self.progress_bar.setValue(75)
-
-            print("Getting your stats...")
-            bonus_stats_frame = create_stats_frame(my_bonus_stats)
-            self.progress_bar.setValue(85)
-            
-            print("Merging stats with metadata...")
-            bonus_crosswords = merge_frames(bonus_stats_frame, bonus_metadata)
-            bonus_crosswords = add_days(bonus_crosswords)
-            self.progress_bar.setValue(95)
-            
-            save_crosswords(bonus_crosswords, "bonus", bonus_date)
-            
-            data["last_refresh_date"] = str(date.today() - timedelta(days=1))
- 
-            with open('data/user_data.json', 'w') as f:
-                json.dump(data, f)
-            
-            self.continue_button.setEnabled(True)
-            self.load_button.setEnabled(False)
-            self.progress_label.setText("Data load is complete! Please click 'continue'")
-
-        except Exception as e:
-            self.puzzle_type_label.setText("There was an error getting your data. Please check your cookie and internet connection")
-
-    def show_main_window(self) -> None:
-        '''Shows main window and accepts current window.'''
-        self.main_window = MainWindow()
-        self.main_window.show()
-        self.accept()
 
 
 class MainWindow(qtw.QWidget):
