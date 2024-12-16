@@ -33,7 +33,7 @@ def create_compare_ave_times() -> None:
 
     for i in range(len(all_days)):
         if all_days.iloc[i] == 0:
-            all_days.iloc[i] = ""
+            all_days.iloc[i] = np.nan
             
     plt.figure(figsize=(8, 6))
 
@@ -52,10 +52,7 @@ def create_compare_ave_times() -> None:
                     f'{round(all_days.values[i]//60)}:{str(round(all_days.values[i]%60)).zfill(2)}',
                     fontdict= {"size":"x-large"})
         except Exception as e:
-            plt.text(i - .35, 
-                    all_days_min.values[i] + .75,
-                    f'',
-                    fontdict= {"size":"x-large"})
+            continue
 
 def create_mini_hist_box(num_days: int, ax: plt.Axes, ax_box: plt.Axes) -> None:
     '''Draws histogram/boxplot graph for mini crosswords.'''

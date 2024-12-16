@@ -25,6 +25,7 @@ class CWApp(qtw.QApplication):
                 print(self.user_cookie)
                 self.main_window()
         except Exception as e:
+            print(e)
             self.enter_cookie()
 
     def enter_cookie(self) -> None:

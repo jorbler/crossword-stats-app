@@ -90,7 +90,7 @@ def bonus_table() -> pd.DataFrame:
     '''Preps bonus data for table view.'''
     bonus_data = load_bonus_data()
     bonus_data["seconds_spent_solving"] = bonus_data["seconds_spent_solving"].apply(lambda x: f"{round(x//60)}m {round(x%60)}s")
-    return bonus_data
+    return bonus_data.sort_values("print_date")
 
 def daily_table() -> pd.DataFrame:
     '''Preps daily data for table view.'''
@@ -98,7 +98,7 @@ def daily_table() -> pd.DataFrame:
     daily_table_var = gold_all_days
     daily_table_var["seconds_spent_solving"] = daily_table_var["seconds_spent_solving"].apply(lambda x: f"{round(x//60)}m {round(x%60)}s")
     daily_table_var = daily_table_var[["seconds_spent_solving","print_date","day"]]
-    return daily_table_var
+    return daily_table_var.sort_values("print_date")
 
 def mini_table() -> pd.DataFrame:
     '''Preps mini data for table view.'''
@@ -106,4 +106,4 @@ def mini_table() -> pd.DataFrame:
     mini_table_var = mini_table_var[mini_table_var["solved"] == True]
     mini_table_var["seconds_spent_solving"] = mini_table_var["seconds_spent_solving"].apply(lambda x: f"{round(x//60)}m {round(x%60)}s")
     mini_table_var = mini_table_var[["seconds_spent_solving","print_date","day"]]
-    return mini_table_var
+    return mini_table_var.sort_values("print_date")

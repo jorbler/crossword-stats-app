@@ -88,7 +88,7 @@ def add_days(crosswords: pd.DataFrame) -> pd.DataFrame:
         print_date_list = crosswords.loc[i,"print_date"].split("-")
         crosswords.loc[i, "day"] = days_of_week[str(datetime(int(print_date_list[0]), int(print_date_list[1]), int(print_date_list[2])).weekday())]
 
-    crosswords.sort_values(by = "print_date")
+    crosswords = crosswords.sort_values("print_date")
     return crosswords
     
 

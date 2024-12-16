@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets as qtw
-from PyQt5.QtCore import Qt, QAbstractTableModel
+from PyQt5.QtCore import Qt, QAbstractTableModel, pyqtSignal
 from PyQt5 import QtCore as qtc
 from PyQt5.QtGui import QFont, QPixmap
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -409,6 +409,7 @@ class BonusTab(qtw.QWidget):
 
 class RefreshButton(qtw.QWidget):
     '''QWidget containing a QPushButton that triggers the data refresh process.'''
+    refresh_complete = pyqtSignal()
     def __init__(self):
         super().__init__()
         self.get_last_date()
@@ -424,10 +425,12 @@ class RefreshButton(qtw.QWidget):
         '''Events triggered by pressing "Refresh Data" button.'''
         if self.check_date():
             src.data_refresh.main()
+            self.refresh_complete.emit()
             return
         else:
             if self.confirm_refresh():
                 src.data_refresh.main()
+                self.refresh_complete.emit()
                 return
             else:
                 return
@@ -449,8 +452,7 @@ class RefreshButton(qtw.QWidget):
         confirm_window = ConfirmRefresh()
         if confirm_window.exec() == qtw.QMessageBox.Yes:
             return True
-        return False        
-
+        return False
 
 class ConfirmRefresh(YesNoPopUpWindow):
     '''YesNoPopUpWindow informing user that it has been more than 30 days since last data refresh and confirming that they want to proceed.'''
@@ -538,17 +540,13 @@ class InitalLoadData(qtw.QDialog):
 
             print(f"Loading daily puzzles...")
             self.progress_bar.setValue(10)
-            qtw.QApplication.processEvents()
             print("Retrieving puzzle IDs...")
             my_daily_stats, daily_metadata = retrieve_data("daily", daily_date, cookies)
             self.progress_bar.setValue(17)
-            qtw.QApplication.processEvents()
 
             print("Getting your stats...")
-            qtw.QApplication.processEvents()
             daily_stats_frame = create_stats_frame(my_daily_stats)
             self.progress_bar.setValue(25)
-            qtw.QApplication.processEvents()
             
             print("Merging stats with metadata...")
             daily_crosswords = merge_frames(daily_stats_frame, daily_metadata)
@@ -559,45 +557,37 @@ class InitalLoadData(qtw.QDialog):
 
             print(f"Loading mini puzzles...")
             self.progress_bar.setValue(37)
-            qtw.QApplication.processEvents()
 
             print("Retrieving puzzle IDs...")
             my_mini_stats, mini_metadata = retrieve_data("mini", mini_date, cookies)
             self.progress_bar.setValue(45)
-            qtw.QApplication.processEvents()
 
             print("Getting your stats...")
             mini_stats_frame = create_stats_frame(my_mini_stats)
             self.progress_bar.setValue(50)
-            qtw.QApplication.processEvents()
 
             print("Merging stats with metadata...")
             mini_crosswords = merge_frames(mini_stats_frame, mini_metadata)
             mini_crosswords = add_days(mini_crosswords)
             self.progress_bar.setValue(60)
-            qtw.QApplication.processEvents()
 
             save_crosswords(mini_crosswords, "mini", mini_date)
 
             print(f"Loading bonus puzzles...")
             self.progress_bar.setValue(67)
-            qtw.QApplication.processEvents()
 
             print("Retrieving puzzle IDs...")
             my_bonus_stats, bonus_metadata = retrieve_data("bonus", bonus_date, cookies)
             self.progress_bar.setValue(75)
-            qtw.QApplication.processEvents()
 
             print("Getting your stats...")
             bonus_stats_frame = create_stats_frame(my_bonus_stats)
             self.progress_bar.setValue(85)
-            qtw.QApplication.processEvents()
             
             print("Merging stats with metadata...")
             bonus_crosswords = merge_frames(bonus_stats_frame, bonus_metadata)
             bonus_crosswords = add_days(bonus_crosswords)
             self.progress_bar.setValue(95)
-            qtw.QApplication.processEvents()
             
             save_crosswords(bonus_crosswords, "bonus", bonus_date)
             
@@ -652,6 +642,7 @@ class MainWindow(qtw.QWidget):
         left_panel_layout.addWidget(self.left_panel_top)
 
         self.refresh_button = RefreshButton()
+        self.refresh_button.refresh_complete.connect(self.reopen_window)
         left_panel_layout.addWidget(self.refresh_button)
 
         self.left_panel.setLayout(left_panel_layout)
@@ -664,3 +655,9 @@ class MainWindow(qtw.QWidget):
     def change_page(self, index: int) -> None:
         '''Changes page to index of the QListWidget.'''
         self.left_panel_pages.setCurrentIndex(index)
+
+    def reopen_window(self) -> None:
+        '''Closes and reopens the main window when the refresh button is pressed and data is fully done refreshing.'''
+        self.hide()
+        self.__init__()
+        self.show()
