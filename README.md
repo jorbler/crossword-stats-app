@@ -15,17 +15,21 @@ With this project, I aim to provide users with insights into their crossword dat
 You must be using Python 3.8.8 or higher.
 
 ## 2. Clone the Repository
+
 If you have git, this can be done by running the following in a new terminal:
 
-```bash
-git clone https://github.com/jorbler/crossword-stats-app.git
-```
+### With git:
 
-```bash
-cd crossword-stats-app
-```
+1. ```bash
+    git clone https://github.com/jorbler/crossword-stats-app.git
+    ```
 
-If not, you can download this repository by clicking the green "<> Code" button on the top right of the GitHub repository page and click "Download ZIP" from the dropdown. Unzip this ZIP file and make sure you know where the unzipped folder is located.
+2. ```bash
+    cd crossword-stats-app
+    ```
+
+### Via ZIP download:
+If you do not have git, you can download this repository by clicking the green "<> Code" button on the top right of the GitHub repository page and click "Download ZIP" from the dropdown. Unzip this ZIP file and make sure you know where the unzipped folder is located.
 
 Open the terminal and navigate to the location of the folder by typing 
 
@@ -84,7 +88,9 @@ If you do not have a NYT Games account or do not want to load your own data, the
 
 8. When you open the app, you will be prompted for your cookie. Paste it in the box and wait for your data to load!
 
+# Contact
+This project was created by Jordan B. Lerner at William & Mary as part of her Data Science capstone class.
 
-
+If you have any questions, suggestions, or comments, please feel free to reach out via email: jordanblerner@gmail.com
 
 
