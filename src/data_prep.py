@@ -34,9 +34,8 @@ def load_mini_data() -> pd.DataFrame:
 
 def get_day_frame(day: str) -> pd.DataFrame:
     '''Preps data for individual day histograms.'''
-    daily_data = load_daily_data()
-    day_frame = daily_data[daily_data["day"] == day]
-    day_frame = day_frame[day_frame["star"] == "Gold"].reset_index(drop = True)
+    daily_data = daily_gold_days()
+    day_frame = daily_data[daily_data["day"] == day].reset_index(drop = True)
     day_frame = day_frame[["seconds_spent_solving", "print_date"]]
 
     datetime_date = []
@@ -46,7 +45,7 @@ def get_day_frame(day: str) -> pd.DataFrame:
     
     return day_frame
 
-def prep_bar_chart_all_days() -> pd.DataFrame:
+def prep_bar_chart_all_days() -> pd.Series:
     '''Preps data for bar chart containing average times for each day.'''
     gold_all_days = daily_gold_days()
     ave_by_day = gold_all_days.groupby("day")["seconds_spent_solving"].mean()

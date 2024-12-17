@@ -98,28 +98,28 @@ def save_crosswords(crosswords: pd.DataFrame, puzzle_type: str, start_date: str)
     crosswords.to_csv(f'data/{puzzle_type}_{"".join(start_date.split("-"))}_{"".join((str(date.today() - timedelta(days=1))).split("-"))}.csv', index = False)
 
 
-def main() -> None:
-    '''Loads user's crossword data.'''
-    with open("data/user_data.json", 'r') as file:
-        data = json.load(file)
-    cookies = {"NYT-S": data["cookie"]}
+# def main() -> None:
+#     '''Loads user's crossword data.'''
+#     with open("data/user_data.json", 'r') as file:
+#         data = json.load(file)
+#     cookies = {"NYT-S": data["cookie"]}
 
-    puzzle_type = input("Enter puzzle type: ") #make button
-    start_date = input("What is the start date for the data you want to retrieve? Use the format 'YYYY-MM-DD': ") #make button
+#     puzzle_type = input("Enter puzzle type: ") #make button
+#     start_date = input("What is the start date for the data you want to retrieve? Use the format 'YYYY-MM-DD': ") #make button
     
-    print("Retrieving puzzle IDs...")
-    my_stats, metadata = retrieve_data(puzzle_type, start_date, cookies)
+#     print("Retrieving puzzle IDs...")
+#     my_stats, metadata = retrieve_data(puzzle_type, start_date, cookies)
 
-    print("Getting your stats...")
-    stats_frame = create_stats_frame(my_stats)
+#     print("Getting your stats...")
+#     stats_frame = create_stats_frame(my_stats)
 
-    print("Merging stats with metadata...")
-    crosswords = merge_frames(stats_frame, metadata)
-    crosswords = add_days(crosswords)
-    save_crosswords(crosswords, puzzle_type, start_date)
+#     print("Merging stats with metadata...")
+#     crosswords = merge_frames(stats_frame, metadata)
+#     crosswords = add_days(crosswords)
+#     save_crosswords(crosswords, puzzle_type, start_date)
 
-    print("Crossword stats saved!")
+#     print("Crossword stats saved!")
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

@@ -11,7 +11,6 @@ class CWApp(qtw.QApplication):
         super().__init__([])
 
         self.load_user_info()
-        #self.main_window()
         sys.exit(self.exec_())
         return
     

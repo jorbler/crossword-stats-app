@@ -42,19 +42,20 @@ If you are having trouble or are getting errors, type `ls` and hit enter. All of
 
 ## 3. Install required packages
 
+
 ```bash
 pip install -r requirements.txt
+```
+**Before running the app, please look at the data section (section 4)**
+### To run the app:
+```bash 
+python3 crossword_app.py
 ```
 
 ## 4. Data
 To run the app with your own data, you will first need to get your cookie associated with your NYT Games account, which you can do by following the instructions below.
 
 If you do not have a NYT Games account or do not want to load your own data, there is sample data in the sample_data folder. Delete the data/ folder and rename the sample_data/ folder to data/.
-
-### Once you complete one of the two options above, run 
-```bash 
-python3 crossword_app.py
-```
 
 ### Getting your cookie
 

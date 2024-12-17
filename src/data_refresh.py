@@ -40,9 +40,10 @@ def get_today(puzzle_type: str, start_date: str, end_date: str) -> pd.DataFrame:
         this_puzzle_id = metadata["puzzle_id"].values[i]
         url = "https://www.nytimes.com/svc/crosswords/v6/game/" + this_puzzle_id + ".json"
         
-        my_stats[this_puzzle_id] = json.loads(get_data(url, cookies))["calcs"]    
-        metadata_dedup = metadata.drop_duplicates()
-        metadata_dedup = metadata_dedup.reset_index(drop = True).astype("string")
+        my_stats[this_puzzle_id] = json.loads(get_data(url, cookies))["calcs"]
+
+    metadata_dedup = metadata.drop_duplicates()
+    metadata_dedup = metadata_dedup.reset_index(drop = True).astype("string")
 
     stats_frame = get_all_data.create_stats_frame(my_stats)
     todays_data = get_all_data.merge_frames(stats_frame, metadata_dedup)
