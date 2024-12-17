@@ -171,7 +171,7 @@ class EnterCookie(qtw.QDialog):
         super().__init__()
         self.setWindowTitle('Welcome!')
 
-        self.welcome_text = qtw.QLabel("Welcome to MyCrosswordBuddy! This app allows you to gain insight into your NYT Crossword data. \nTo access your data, you will need to enter the cookie associated with your NYT Games account.\n\nFor detailed instructions on how to access your cookie, please go to the README file.")        
+        self.welcome_text = qtw.QLabel("Welcome to MyCrosswordBuddy! This app allows you to gain insight into your NYT Crossword data. \nTo access your data, you will need to enter the cookie associated with your NYT Games account.\n\nFor detailed instructions on how to access your cookie, please go to the README file. \n\nYou must have access to a stable internet connection for the duration of the data load, or it will crash.")        
 
         self.input_box = qtw.QLineEdit()
         self.input_box.setPlaceholderText("Enter your cookie here")
