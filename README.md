@@ -58,6 +58,8 @@ To run the app with your own data, you will first need to get your cookie associ
 
 If you do not have a NYT Games account or do not want to load your own data, there is sample data in the sample_data folder. Delete the data/ folder and rename the sample_data/ folder to data/.
 
+**IF YOU ARE USING THE SAMPLE DATA DO NOT HIT THE "REFRESH" BUTTON; THE COOKIE IS NOT REAL AND WILL CRASH THE APP**
+
 ## Getting your cookie
 
 1. Open https://www.nytimes.com/crosswords in Google Chrome.
