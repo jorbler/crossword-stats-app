@@ -1,9 +1,10 @@
-from src.getNYTdata import get_data
+from datetime import date, timedelta
 import pandas as pd
 import json
-from datetime import date, timedelta
-import src.get_all_data as get_all_data
 import os
+
+import src.get_all_data as get_all_data
+from src.getNYTdata import get_data
 
 # def get_info():
 #     today_date = str(date.today() - timedelta(days=1))

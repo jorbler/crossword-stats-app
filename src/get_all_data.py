@@ -1,8 +1,9 @@
-import pandas as pd
-from src.getNYTdata import get_data
-import json
 from datetime import datetime, date, timedelta
 from typing import Tuple
+import pandas as pd
+import json
+
+from src.getNYTdata import get_data
 
 puzzle_types = ["daily", "mini", "bonus"]
 

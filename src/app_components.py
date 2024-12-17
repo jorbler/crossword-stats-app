@@ -1,17 +1,15 @@
-from PyQt5 import QtWidgets as qtw
-from PyQt5.QtCore import Qt, QAbstractTableModel, pyqtSignal
-from PyQt5 import QtCore as qtc
-from PyQt5.QtGui import QFont, QPixmap
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from PyQt5.QtCore import Qt, QAbstractTableModel, pyqtSignal
+from PyQt5.QtGui import QFont, QPixmap
+from PyQt5 import QtWidgets as qtw
 from datetime import date
 from typing import List
-import os
 import pandas as pd
 import json
+import os
 
-from src.get_all_data import *
 from src.create_graphs import *
-from src.globals import *
+from src.get_all_data import *
 import src.data_refresh
 
 class YesNoPopUpWindow(qtw.QMessageBox):
