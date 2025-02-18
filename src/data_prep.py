@@ -22,6 +22,7 @@ def load_bonus_data() -> pd.DataFrame:
     '''Loads bonus data for graphing/table view.'''
     data_files = os.listdir("data/")
     bonus_data = pd.read_csv("data/" + [file for file in data_files if file.startswith("bonus")][0])[["seconds_spent_solving", "title", "print_date"]]
+    bonus_data = bonus_data.dropna()
     return bonus_data
 
 def load_mini_data() -> pd.DataFrame:
