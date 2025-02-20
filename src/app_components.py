@@ -177,25 +177,49 @@ class EnterCookie(qtw.QDialog):
         self.input_box.setPlaceholderText("Enter your cookie here")
         self.input_box.setFixedSize(400, 40)
 
-        self.ok_button = qtw.QPushButton("OK", self)
+        self.sample_data_button = qtw.QPushButton("Use Sample Data", self)
+        self.sample_data_button.clicked.connect(self.move_sample_data)
 
+        self.ok_button = qtw.QPushButton("OK", self)
         self.ok_button.clicked.connect(self.save_cookie)
-        
+
+        self.buttons_widget = qtw.QWidget()
+        buttons_layout = qtw.QHBoxLayout()
+        buttons_layout.addWidget(self.ok_button)
+        buttons_layout.addWidget(self.sample_data_button)
+        self.buttons_widget.setLayout(buttons_layout)
+
         self.my_layout = qtw.QVBoxLayout(self)
         self.my_layout.addWidget(self.welcome_text)
         self.my_layout.addWidget(self.input_box)
-        self.my_layout.addWidget(self.ok_button)
+        self.my_layout.addWidget(self.buttons_widget)
+        self.setLayout(self.my_layout)
         
     def save_cookie(self) -> None:
         '''Grabs text from input box and assigns user cookie to self.cookie.'''
         self.cookie_value = self.input_box.text()
         user_dict = {"cookie":self.cookie_value}
+        os.mkdir("data/user_data.json")
         with open('data/user_data.json', 'w') as f:
             json.dump(user_dict, f)
         self.init_load = InitalLoadData()
         self.init_load.show()
         self.accept()
 
+    def show_main_window(self):   
+        self.main_window = MainWindow()
+        self.main_window.show()
+        self.accept()
+
+    def move_sample_data(self) -> None:
+        '''Moves data from the sample_data folder into the data folder.'''
+        if not os.path.exists("data"):
+            os.mkdir("data")
+        for path in os.listdir("sample_data"):
+            os.rename(("sample_data/" + path), ("data/" + path))
+        os.rmdir("sample_data")
+        self.show_main_window()
+    
 
 class InitalLoadData(qtw.QDialog):
     '''
@@ -564,6 +588,12 @@ class RefreshButton(qtw.QWidget):
 
         self.refresh_button = qtw.QPushButton("Refresh Data")
         self.refresh_button.clicked.connect(self.refresh_data)
+
+        with open('data/user_data.json') as f:
+                self.user_data = json.load(f)
+        
+        if self.user_data["cookie"] == "fake_cookie123":
+            self.refresh_button.setEnabled(False)
 
         layout = qtw.QHBoxLayout()
         layout.addWidget(self.refresh_button)

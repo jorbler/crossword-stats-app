@@ -83,9 +83,9 @@ python3 crossword_app.py
 # Data
 To run the app with your own data, you will first need to get your cookie associated with your NYT Games account, which you can do by following the instructions below.
 
-If you do not have a NYT Games account or do not want to load your own data, there is sample data in the sample_data folder. Delete the data/ folder and rename the sample_data/ folder to data/.
+If you do not have a NYT Games account or do not want to load your own data, you can choose to use sample data by clicking "Use Sample Data" in the welcome window.
 
-**IF YOU ARE USING THE SAMPLE DATA DO NOT HIT THE "REFRESH" BUTTON; THE COOKIE IS NOT REAL AND WILL CRASH THE APP**
+**If you are using the sample data the refresh button in the app will be disabled!**
 
 ## Getting your cookie
 
